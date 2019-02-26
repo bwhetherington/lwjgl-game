@@ -1,3 +1,5 @@
+package com.bwh.jcraft;
+
 import org.lwjgl.Sys;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -9,19 +11,21 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.*;
  
-public class Lwjgl3Test {
+public class Game {
  
     // We need to strongly reference callback instances.
     private GLFWErrorCallback errorCallback;
-    private GLFWKeyCallback   keyCallback;
+    private GLFWKeyCallback keyCallback;
+
+    // Dimensions
+    private static int WIDTH = 600, HEIGHT = 400;
  
     // The window handle
     private long window;
  
     public void run() {
-        System.out.println("Hello LWJGL " + Sys.getVersion() + "!");
- 
         try {
+            privateInit();
             init();
             loop();
  
@@ -34,29 +38,26 @@ public class Lwjgl3Test {
             errorCallback.release();
         }
     }
- 
-    private void init() {
+
+    private void privateInit() {
         // Setup an error callback. The default implementation
         // will print the error message in System.err.
         glfwSetErrorCallback(errorCallback = errorCallbackPrint(System.err));
- 
+
         // Initialize GLFW. Most GLFW functions will not work before doing this.
         if ( glfwInit() != GL11.GL_TRUE )
             throw new IllegalStateException("Unable to initialize GLFW");
- 
+
         // Configure our window
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // the window will be resizable
- 
-        int WIDTH = 300;
-        int HEIGHT = 300;
- 
+
         // Create the window
         window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World!", NULL, NULL);
         if ( window == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
- 
+
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(window, keyCallback = new GLFWKeyCallback() {
             @Override
@@ -65,23 +66,29 @@ public class Lwjgl3Test {
                     glfwSetWindowShouldClose(window, GL_TRUE); // We will detect this in our rendering loop
             }
         });
- 
+
         // Get the resolution of the primary monitor
         ByteBuffer vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         // Center our window
         glfwSetWindowPos(
-            window,
-            (GLFWvidmode.width(vidmode) - WIDTH) / 2,
-            (GLFWvidmode.height(vidmode) - HEIGHT) / 2
+                window,
+                (GLFWvidmode.width(vidmode) - WIDTH) / 2,
+                (GLFWvidmode.height(vidmode) - HEIGHT) / 2
         );
- 
+
         // Make the OpenGL context current
         glfwMakeContextCurrent(window);
         // Enable v-sync
         glfwSwapInterval(1);
- 
+
         // Make the window visible
         glfwShowWindow(window);
+
+        GLContext.createFromCurrent();
+    }
+ 
+    public void init() {
+
     }
  
     private void loop() {
@@ -93,13 +100,19 @@ public class Lwjgl3Test {
         GLContext.createFromCurrent();
  
         // Set the clear color
-        glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+        glClearColor(0, 0, 0, 1);
+
+        // Set up viewport
+        glViewport(0, 0, WIDTH, HEIGHT);
  
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
-        while ( glfwWindowShouldClose(window) == GL_FALSE ) {
+        while (glfwWindowShouldClose(window) == GL_FALSE) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
- 
+
+            update(0);
+            render(0);
+
             glfwSwapBuffers(window); // swap the color buffers
  
             // Poll for window events. The key callback above will only be
@@ -107,10 +120,13 @@ public class Lwjgl3Test {
             glfwPollEvents();
         }
     }
- 
-    public static void main(String[] args) {
-    	SharedLibraryLoader.load();
-        new Lwjgl3Test().run();
+
+    public void update(float dt) {
+
+    }
+
+    public void render(float dt) {
+
     }
  
 }
